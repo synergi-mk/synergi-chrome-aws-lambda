@@ -1,7 +1,7 @@
 import { Frame, HTTPRequest, HTTPResponse, Page, WaitForOptions, WaitTimeoutOptions } from 'puppeteer-core';
 import { KeysOfType, Prototype } from '../../../typings/chrome-aws-lambda';
 
-let Super: Prototype<Frame> = null;
+let Super: Prototype<Frame | any> = null;
 
 try {
   Super = require('puppeteer/lib/cjs/puppeteer/common/FrameManager').Frame;
@@ -15,9 +15,7 @@ Super.prototype.clear = function (selector: string) {
 
 Super.prototype.clickAndWaitForNavigation = function (selector: string, options?: WaitForOptions) {
   options = options ?? {
-    waitUntil: [
-      'load',
-    ],
+    waitUntil: ['load'],
   };
 
   let promises: [Promise<HTTPResponse>, Promise<void>] = [
@@ -28,7 +26,11 @@ Super.prototype.clickAndWaitForNavigation = function (selector: string, options?
   return Promise.all(promises).then((value) => value.shift() as HTTPResponse);
 };
 
-Super.prototype.clickAndWaitForRequest = function (selector: string, predicate: string | RegExp | ((request: HTTPRequest) => boolean | Promise<boolean>), options?: WaitTimeoutOptions) {
+Super.prototype.clickAndWaitForRequest = function (
+  selector: string,
+  predicate: string | RegExp | ((request: HTTPRequest) => boolean | Promise<boolean>),
+  options?: WaitTimeoutOptions
+) {
   let callback = (request: HTTPRequest) => {
     let url = request.url();
 
@@ -44,14 +46,18 @@ Super.prototype.clickAndWaitForRequest = function (selector: string, predicate: 
   };
 
   let promises: [Promise<HTTPRequest>, Promise<void>] = [
-    ((this._frameManager as any)._page as Page).waitForRequest((typeof predicate === 'function') ? predicate : callback, options),
+    ((this._frameManager as any)._page as Page).waitForRequest(typeof predicate === 'function' ? predicate : callback, options),
     this.click(selector),
   ];
 
   return Promise.all(promises).then((value) => value.shift() as HTTPRequest);
 };
 
-Super.prototype.clickAndWaitForResponse = function (selector: string, predicate: string | RegExp | ((request: HTTPResponse) => boolean | Promise<boolean>), options?: WaitTimeoutOptions) {
+Super.prototype.clickAndWaitForResponse = function (
+  selector: string,
+  predicate: string | RegExp | ((request: HTTPResponse) => boolean | Promise<boolean>),
+  options?: WaitTimeoutOptions
+) {
   let callback = (request: HTTPResponse) => {
     let url = request.url();
 
@@ -67,7 +73,7 @@ Super.prototype.clickAndWaitForResponse = function (selector: string, predicate:
   };
 
   let promises: [Promise<HTTPResponse>, Promise<void>] = [
-    ((this._frameManager as any)._page as Page).waitForResponse((typeof predicate === 'function') ? predicate : callback, options),
+    ((this._frameManager as any)._page as Page).waitForResponse(typeof predicate === 'function' ? predicate : callback, options),
     this.click(selector),
   ];
 
@@ -106,7 +112,11 @@ Super.prototype.fillFormByXPath = function <T extends Record<string, boolean | s
   return this.$(selector).then((element) => element?.fillFormByXPath(data) ?? null);
 };
 
-Super.prototype.number = function <T = HTMLElement>(selector: string, decimal: string = '.', property: KeysOfType<T, string> = 'textContent' as any) {
+Super.prototype.number = function <T = HTMLElement>(
+  selector: string,
+  decimal: string = '.',
+  property: KeysOfType<T, string> = 'textContent' as any
+) {
   return this.$(selector).then((element) => element?.number(decimal, property) ?? null);
 };
 

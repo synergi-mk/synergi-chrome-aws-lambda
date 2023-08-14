@@ -1,4 +1,5 @@
-import { ElementHandle, EvaluateFn, HTTPRequest, HTTPResponse, Page, WaitForOptions, WaitTimeoutOptions } from 'puppeteer-core';
+import { ElementHandle, HTTPRequest, HTTPResponse, Page, WaitForOptions, WaitTimeoutOptions } from 'puppeteer-core';
+
 import { KeysOfType, Prototype } from '../../../typings/chrome-aws-lambda';
 
 let Super: Prototype<ElementHandle> = null;
@@ -15,20 +16,18 @@ Super.prototype.clear = function () {
 
 Super.prototype.clickAndWaitForNavigation = function (options?: WaitForOptions) {
   options = options ?? {
-    waitUntil: [
-      'load',
-    ],
+    waitUntil: ['load'],
   };
 
-  let promises: [Promise<HTTPResponse>, Promise<void>] = [
-    ((this as any)._page as Page).waitForNavigation(options),
-    this.click(),
-  ];
+  let promises: [Promise<HTTPResponse>, Promise<void>] = [((this as any)._page as Page).waitForNavigation(options), this.click()];
 
   return Promise.all(promises).then((value) => value.shift() as HTTPResponse);
 };
 
-Super.prototype.clickAndWaitForRequest = function (predicate: string | RegExp | ((request: HTTPRequest) => boolean | Promise<boolean>), options?: WaitTimeoutOptions) {
+Super.prototype.clickAndWaitForRequest = function (
+  predicate: string | RegExp | ((request: HTTPRequest) => boolean | Promise<boolean>),
+  options?: WaitTimeoutOptions
+) {
   let callback = (request: HTTPRequest) => {
     let url = request.url();
 
@@ -44,14 +43,17 @@ Super.prototype.clickAndWaitForRequest = function (predicate: string | RegExp | 
   };
 
   let promises: [Promise<HTTPRequest>, Promise<void>] = [
-    ((this as any)._page as Page).waitForRequest((typeof predicate === 'function') ? predicate : callback, options),
+    ((this as any)._page as Page).waitForRequest(typeof predicate === 'function' ? predicate : callback, options),
     this.click(),
   ];
 
   return Promise.all(promises).then((value) => value.shift() as HTTPRequest);
 };
 
-Super.prototype.clickAndWaitForResponse = function (predicate: string | RegExp | ((request: HTTPResponse) => boolean | Promise<boolean>), options?: WaitTimeoutOptions) {
+Super.prototype.clickAndWaitForResponse = function (
+  predicate: string | RegExp | ((request: HTTPResponse) => boolean | Promise<boolean>),
+  options?: WaitTimeoutOptions
+) {
   let callback = (request: HTTPResponse) => {
     let url = request.url();
 
@@ -67,7 +69,7 @@ Super.prototype.clickAndWaitForResponse = function (predicate: string | RegExp |
   };
 
   let promises: [Promise<HTTPResponse>, Promise<void>] = [
-    ((this as any)._page as Page).waitForResponse((typeof predicate === 'function') ? predicate : callback, options),
+    ((this as any)._page as Page).waitForResponse(typeof predicate === 'function' ? predicate : callback, options),
     this.click(),
   ];
 
@@ -105,7 +107,8 @@ Super.prototype.fillFormByLabel = function <T extends Record<string, boolean | s
       }
 
       let type = (elements[0].getAttribute('type') || elements[0].nodeName).toLowerCase();
-      let values: (boolean | string)[] = (Array.isArray(value) === true) ? value as (boolean | string)[] : [value] as (boolean | string)[];
+      let values: (boolean | string)[] =
+        Array.isArray(value) === true ? (value as (boolean | string)[]) : ([value] as (boolean | string)[]);
 
       if (type === 'file') {
         throw new Error(`Input element of type 'file' is not supported.`);
@@ -115,8 +118,7 @@ Super.prototype.fillFormByLabel = function <T extends Record<string, boolean | s
         try {
           element.focus();
           element.dispatchEvent(new Event('focus'));
-        } catch (error) {
-        }
+        } catch (error) {}
 
         if (type === 'select') {
           element.value = undefined;
@@ -139,28 +141,27 @@ Super.prototype.fillFormByLabel = function <T extends Record<string, boolean | s
             }
           }
         } else if (type === 'checkbox' || type === 'radio') {
-          element.checked = (value === true) || values.includes(element.value);
+          element.checked = value === true || values.includes(element.value);
 
           if (element.checked === true) {
             result[key].push(element.value);
           }
         } else if (typeof value === 'string') {
           if (element.isContentEditable === true) {
-            result[key].push(element.textContent = value);
+            result[key].push((element.textContent = value));
           } else {
-            result[key].push(element.value = value);
+            result[key].push((element.value = value));
           }
         }
 
         for (let trigger of ['input', 'change']) {
-          element.dispatchEvent(new Event(trigger, { 'bubbles': true }));
+          element.dispatchEvent(new Event(trigger, { bubbles: true }));
         }
 
         try {
           element.blur();
           element.dispatchEvent(new Event('blur'));
-        } catch (error) {
-        }
+        } catch (error) {}
 
         if (type === 'checkbox' || type === 'radio') {
           break;
@@ -171,7 +172,7 @@ Super.prototype.fillFormByLabel = function <T extends Record<string, boolean | s
     return result;
   };
 
-  return this.evaluate(callback as unknown as EvaluateFn<Element>, data) as any;
+  return this.evaluate(callback as any, data) as any;
 };
 
 Super.prototype.fillFormByName = function <T extends Record<string, boolean | string | string[]>>(data: T) {
@@ -196,7 +197,8 @@ Super.prototype.fillFormByName = function <T extends Record<string, boolean | st
       }
 
       let type = (elements[0].getAttribute('type') || elements[0].nodeName).toLowerCase();
-      let values: (boolean | string)[] = (Array.isArray(value) === true) ? value as (boolean | string)[] : [value] as (boolean | string)[];
+      let values: (boolean | string)[] =
+        Array.isArray(value) === true ? (value as (boolean | string)[]) : ([value] as (boolean | string)[]);
 
       if (type === 'file') {
         throw new Error(`Input element of type 'file' is not supported.`);
@@ -206,8 +208,7 @@ Super.prototype.fillFormByName = function <T extends Record<string, boolean | st
         try {
           element.focus();
           element.dispatchEvent(new Event('focus'));
-        } catch (error) {
-        }
+        } catch (error) {}
 
         if (type === 'select') {
           element.value = undefined;
@@ -230,28 +231,27 @@ Super.prototype.fillFormByName = function <T extends Record<string, boolean | st
             }
           }
         } else if (type === 'checkbox' || type === 'radio') {
-          element.checked = (value === true) || values.includes(element.value);
+          element.checked = value === true || values.includes(element.value);
 
           if (element.checked === true) {
             result[key].push(element.value);
           }
         } else if (typeof value === 'string') {
           if (element.isContentEditable === true) {
-            result[key].push(element.textContent = value);
+            result[key].push((element.textContent = value));
           } else {
-            result[key].push(element.value = value);
+            result[key].push((element.value = value));
           }
         }
 
         for (let trigger of ['input', 'change']) {
-          element.dispatchEvent(new Event(trigger, { 'bubbles': true }));
+          element.dispatchEvent(new Event(trigger, { bubbles: true }));
         }
 
         try {
           element.blur();
           element.dispatchEvent(new Event('blur'));
-        } catch (error) {
-        }
+        } catch (error) {}
 
         if (type === 'checkbox' || type === 'radio') {
           break;
@@ -262,7 +262,7 @@ Super.prototype.fillFormByName = function <T extends Record<string, boolean | st
     return result;
   };
 
-  return this.evaluate(callback as unknown as EvaluateFn<Element>, data) as any;
+  return this.evaluate(callback as any, data) as any;
 };
 
 Super.prototype.fillFormBySelector = function <T extends Record<string, boolean | string | string[]>>(data: T) {
@@ -287,7 +287,8 @@ Super.prototype.fillFormBySelector = function <T extends Record<string, boolean 
       }
 
       let type = (elements[0].getAttribute('type') || elements[0].nodeName).toLowerCase();
-      let values: (boolean | string)[] = (Array.isArray(value) === true) ? value as (boolean | string)[] : [value] as (boolean | string)[];
+      let values: (boolean | string)[] =
+        Array.isArray(value) === true ? (value as (boolean | string)[]) : ([value] as (boolean | string)[]);
 
       if (type === 'file') {
         throw new Error(`Input element of type 'file' is not supported.`);
@@ -297,8 +298,7 @@ Super.prototype.fillFormBySelector = function <T extends Record<string, boolean 
         try {
           element.focus();
           element.dispatchEvent(new Event('focus'));
-        } catch (error) {
-        }
+        } catch (error) {}
 
         if (type === 'select') {
           element.value = undefined;
@@ -321,28 +321,27 @@ Super.prototype.fillFormBySelector = function <T extends Record<string, boolean 
             }
           }
         } else if (type === 'checkbox' || type === 'radio') {
-          element.checked = (value === true) || values.includes(element.value);
+          element.checked = value === true || values.includes(element.value);
 
           if (element.checked === true) {
             result[key].push(element.value);
           }
         } else if (typeof value === 'string') {
           if (element.isContentEditable === true) {
-            result[key].push(element.textContent = value);
+            result[key].push((element.textContent = value));
           } else {
-            result[key].push(element.value = value);
+            result[key].push((element.value = value));
           }
         }
 
         for (let trigger of ['input', 'change']) {
-          element.dispatchEvent(new Event(trigger, { 'bubbles': true }));
+          element.dispatchEvent(new Event(trigger, { bubbles: true }));
         }
 
         try {
           element.blur();
           element.dispatchEvent(new Event('blur'));
-        } catch (error) {
-        }
+        } catch (error) {}
 
         if (type === 'checkbox' || type === 'radio') {
           break;
@@ -353,7 +352,7 @@ Super.prototype.fillFormBySelector = function <T extends Record<string, boolean 
     return result;
   };
 
-  return this.evaluate(callback as unknown as EvaluateFn<Element>, data) as any;
+  return this.evaluate(callback as any, data) as any;
 };
 
 Super.prototype.fillFormByXPath = function <T extends Record<string, boolean | string | string[]>>(data: T) {
@@ -384,7 +383,8 @@ Super.prototype.fillFormByXPath = function <T extends Record<string, boolean | s
       }
 
       let type = (elements[0].getAttribute('type') || elements[0].nodeName).toLowerCase();
-      let values: (boolean | string)[] = (Array.isArray(value) === true) ? value as (boolean | string)[] : [value] as (boolean | string)[];
+      let values: (boolean | string)[] =
+        Array.isArray(value) === true ? (value as (boolean | string)[]) : ([value] as (boolean | string)[]);
 
       if (type === 'file') {
         throw new Error(`Input element of type 'file' is not supported.`);
@@ -394,8 +394,7 @@ Super.prototype.fillFormByXPath = function <T extends Record<string, boolean | s
         try {
           element.focus();
           element.dispatchEvent(new Event('focus'));
-        } catch (error) {
-        }
+        } catch (error) {}
 
         if (type === 'select') {
           element.value = undefined;
@@ -418,28 +417,27 @@ Super.prototype.fillFormByXPath = function <T extends Record<string, boolean | s
             }
           }
         } else if (type === 'checkbox' || type === 'radio') {
-          element.checked = (value === true) || values.includes(element.value);
+          element.checked = value === true || values.includes(element.value);
 
           if (element.checked === true) {
             result[key].push(element.value);
           }
         } else if (typeof value === 'string') {
           if (element.isContentEditable === true) {
-            result[key].push(element.textContent = value);
+            result[key].push((element.textContent = value));
           } else {
-            result[key].push(element.value = value);
+            result[key].push((element.value = value));
           }
         }
 
         for (let trigger of ['input', 'change']) {
-          element.dispatchEvent(new Event(trigger, { 'bubbles': true }));
+          element.dispatchEvent(new Event(trigger, { bubbles: true }));
         }
 
         try {
           element.blur();
           element.dispatchEvent(new Event('blur'));
-        } catch (error) {
-        }
+        } catch (error) {}
 
         if (type === 'checkbox' || type === 'radio') {
           break;
@@ -450,7 +448,7 @@ Super.prototype.fillFormByXPath = function <T extends Record<string, boolean | s
     return result;
   };
 
-  return this.evaluate(callback as unknown as EvaluateFn<Element>, data) as any;
+  return this.evaluate(callback as any, data) as any;
 };
 
 Super.prototype.getInnerHTML = function () {
@@ -465,9 +463,9 @@ Super.prototype.getInnerText = function () {
   });
 };
 
-Super.prototype.number = function <T = HTMLElement>(decimal: string = '.', property: KeysOfType<T, string> = 'textContent' as any) {
+Super.prototype.number = function <T = HTMLElement>(decimal: string = '.', property: KeysOfType<T, string> = 'textContent' as any): any {
   let callback = (node: T, decimal: string, property: KeysOfType<T, string>) => {
-    let data = (node[property] as unknown) as string;
+    let data = node[property] as unknown as string;
 
     if (typeof data === 'string') {
       decimal = decimal ?? '.';
@@ -486,10 +484,10 @@ Super.prototype.number = function <T = HTMLElement>(decimal: string = '.', prope
     return null;
   };
 
-  return this.evaluate(callback as unknown as EvaluateFn<Element>, decimal, property as any);
+  return this.evaluate(callback as any, decimal, property as any);
 };
 
-Super.prototype.selectByLabel = function (...values: string[]) {
+Super.prototype.selectByLabel = function (...values: string[]): any {
   for (let value of values) {
     console.assert(typeof value === 'string', `Values must be strings. Found value '${value}' of type '${typeof value}'.`);
   }
@@ -523,12 +521,12 @@ Super.prototype.selectByLabel = function (...values: string[]) {
     return result;
   };
 
-  return this.evaluate(callback as unknown as EvaluateFn<Element>, values);
+  return this.evaluate(callback as any, values);
 };
 
-Super.prototype.string = function <T = HTMLElement>(property: KeysOfType<T, string> = 'textContent' as any) {
+Super.prototype.string = function <T = HTMLElement>(property: KeysOfType<T, string> = 'textContent' as any): any {
   let callback = (node: T, property: KeysOfType<T, string>) => {
-    let data = (node[property] as unknown) as string;
+    let data = node[property] as unknown as string;
 
     if (typeof data === 'string') {
       let patterns = {
@@ -553,5 +551,5 @@ Super.prototype.string = function <T = HTMLElement>(property: KeysOfType<T, stri
     return null;
   };
 
-  return this.evaluate(callback as unknown as EvaluateFn<Element>, property as any);
+  return this.evaluate(callback as any, property as any);
 };
