@@ -6,7 +6,7 @@ let Super: Prototype<Browser> = null;
 try {
   Super = require('puppeteer/lib/cjs/puppeteer/common/Browser').Browser;
 } catch (error) {
-  Super = require('puppeteer-core/lib/cjs/puppeteer/common/Browser').Browser;
+  Super = require('./brane/puppeteer/common/Browser').Browser;
 }
 
 Super.prototype.defaultPage = async function (...hooks: Hook[]) {
