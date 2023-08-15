@@ -1,9 +1,9 @@
 {
-  "name": "chrome-aws-lambda",
+  "name": "synergi-chrome-aws-lambda",
   "private": false,
   "version": "10.1.4",
   "author": {
-    "name": "Alix Axel"
+    "name": "Branko Petkoski"
   },
   "license": "MIT",
   "description": "Chromium Binary for AWS Lambda and Google Cloud Functions",
@@ -36,12 +36,12 @@
     "puppeteer-core": "13.7.0"
   },
   "bugs": {
-    "url": "https://github.com/alixaxel/chrome-aws-lambda/issues"
+    "url": "https://github.com/synergi-mk/synergi-chrome-aws-lambda/issues"
   },
-  "homepage": "https://github.com/alixaxel/chrome-aws-lambda",
+  "homepage": "https://github.com/synergi-mk/synergi-chrome-aws-lambda",
   "repository": {
     "type": "git",
-    "url": "git://github.com/alixaxel/chrome-aws-lambda.git"
+    "url": "git://github.com/synergi-mk/synergi-chrome-aws-lambda.git"
   },
   "keywords": [
     "aws",
